@@ -1,0 +1,52 @@
+#!/bin/bash
+
+trivy=$(trivy)
+echo=$(echo)
+purple_color='\033[35m'
+green_color='\033[32m'
+red_color='\033[31m'
+reset_color='\033[0m'
+
+function check_is_trivy_installed(){
+    if [ $(dpkg-query -W -f='${Status}' trivy 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+        $echo -e "${red_color}Trivy not installed. Install it first.${reset_color}"
+    fi
+    exit 1
+}
+
+function check_arguments(){
+    if [ -z "$1" ]; then
+        $echo "Enter path to the file with images."
+        exit 1
+    fi
+}
+
+function pull_images_and_scan(){
+
+
+    while IFS= read -r container; do
+        if [[ -z "$container" ]]; then
+    	    continue #skip empty lines
+        fi
+
+        output_file="scan_results_${container}//[:v]/_}.txt"
+
+        $echo -e "${purple_color}Scanning container: ${container} ${reset_color}"
+
+        # Run Trivy scan and save result to a file
+        $trivy image "$container" --quit > "$output_file"
+
+        # Check if Trivy exited with error
+        if [[ $? -ne 0 ]]; then
+    	    $echo -e "${red_color}Error scanning $container. Skipping to the next container... ${reset_color}"
+        else
+            $echo -e "${green_color}Scan completed for $container. Results saved to ${reset_color} $output_file"
+        fi
+    done < "$1"
+
+    $echo -e "${green_color}All scan completed. ${reset_color}"
+}
+
+check_is_trivy_installed
+check_arguments
+pull_images_and_scan
