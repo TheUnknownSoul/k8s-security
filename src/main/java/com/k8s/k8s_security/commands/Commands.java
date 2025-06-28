@@ -24,10 +24,11 @@ public class Commands extends AbstractShellComponent implements ValueProvider {
     }
 
     @ShellMethod(value = "Path input", key = "path")
-    public void getPathForTrivy() {
+    public void getPathForTrivy(String sudoPassword) {
         Path pathToProcess = getPathToProcess();
-        System.out.println("Got value " + pathToProcess);
-        inspectorService.runTrivyScan(pathToProcess);
+        System.out.println("Enter sudo password: ");
+        System.out.println("Got value " + pathToProcess + " and " + sudoPassword);
+        inspectorService.runTrivyScan(pathToProcess, sudoPassword);
     }
 
     @ShellMethod(value = "Path input", key = "path")

@@ -8,7 +8,7 @@ red_color='\033[31m'
 reset_color='\033[0m'
 
 function check_is_trivy_installed(){
-    if [ $(dpkg-query -W -f='${Status}' trivy 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+    if [ "$(dpkg-query -W -f='${Status}' trivy 2>/dev/null | grep -c "ok installed")" -eq 0 ]; then
         $echo -e "${red_color}Trivy not installed. Install it first.${reset_color}"
     fi
     exit 1
@@ -22,8 +22,6 @@ function check_arguments(){
 }
 
 function pull_images_and_scan(){
-
-
     while IFS= read -r container; do
         if [[ -z "$container" ]]; then
     	    continue #skip empty lines
