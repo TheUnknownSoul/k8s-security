@@ -4,7 +4,7 @@ public enum Color {
     RED("\033[31m"),
     GREEN("\033[32m"),
     PURPLE("\033[35m"),
-    BlUE(""),
+    BlUE("\033[77m"),
     RESET("\033[0m");
 
 

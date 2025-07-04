@@ -7,10 +7,13 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
 
 @Service
 public class InspectorService {
@@ -19,21 +22,25 @@ public class InspectorService {
     private Resource cveCounter;
     @Value("classpath:scripts/cve_info.py")
     private Resource cveInfo;
+    @Value("classpath:scripts/rbac_check.py")
+    private Resource rbacCheck;
+    @Value("classpath:scripts/trivy_scan.sh")
+    private Resource trivyScript;
 
-    public void runTrivyScan( Path path, String sudoPassword) {
-        if (path != null) {
+    public void runTrivyScan(Path path, String sudoPassword) {
+        if (path != null && sudoPassword != null) {
             try {
 
-                ProcessBuilder pb = new ProcessBuilder("sudo", "-S", "bash", path.toString());
-                pb.redirectErrorStream(true); // Redirect error stream to output stream
-
+                List<String> commands = Arrays.asList("sudo", "-S", "bash", "-c",
+                        trivyScript.getFile().getAbsolutePath());
+                ProcessBuilder pb = new ProcessBuilder(commands);
                 Process process = pb.start();
 
-                // Provide the sudo password to the process's input stream
-                OutputStream os = process.getOutputStream();
-                os.write((sudoPassword + "\\n").getBytes());
-                os.flush();
-                os.close();
+                // Write the password to sudo's stdin
+                try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()))) {
+                    writer.write(sudoPassword + "\n");
+                    writer.flush();
+                }
 
                 // Read the output of the script
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -41,19 +48,19 @@ public class InspectorService {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     output.append(line).append("\\n");
+                    System.out.println(Color.BlUE.getColor() + output + Color.RESET.getColor());
                 }
-
+                reader.close();
                 int exitCode = process.waitFor(); // Wait for the script to finish
 
                 if (exitCode == 0) {
-                    System.out.println(Color.GREEN + "Script executed successfully with root privileges:\\n" + output + Color.RESET);
+                    System.out.println(Color.GREEN.getColor() + "Script executed successfully with root privileges: " + Color.RESET.getColor());
                 } else {
-                    System.out.println(Color.RED + "Script execution failed with exit code " + exitCode + ":\\n" + output + Color.RESET);
+                    System.out.println(Color.RED.getColor() + "Script execution failed with exit code " + exitCode + " " + Color.RESET.getColor());
                 }
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
                 throw new SomethingWentWrongException(Color.RED.getColor() + " " + e.getMessage() + " " + Color.RESET.getColor());
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+
             }
         }
     }
