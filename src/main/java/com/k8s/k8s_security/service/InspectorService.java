@@ -7,13 +7,19 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+
+/***
+ * This service allow you to run few commands to investigate kubernetes image vulnerabilities, count severity in different
+ * batch of files and gives info about each of them.
+
+ @author Andrey Roy
+ */
 
 @Service
 public class InspectorService {
@@ -27,20 +33,15 @@ public class InspectorService {
     @Value("classpath:scripts/trivy_scan.sh")
     private Resource trivyScript;
 
-    public void runTrivyScan(Path path, String sudoPassword) {
-        if (path != null && sudoPassword != null) {
+    public void runTrivyScan(String path) {
+        if (path != null) {
             try {
-
-                List<String> commands = Arrays.asList("sudo", "-S", "bash", "-c",
+                List<String> commands = Arrays.asList("sudo", "-S", "bash",
                         trivyScript.getFile().getAbsolutePath());
                 ProcessBuilder pb = new ProcessBuilder(commands);
+                pb.inheritIO();
                 Process process = pb.start();
 
-                // Write the password to sudo's stdin
-                try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()))) {
-                    writer.write(sudoPassword + "\n");
-                    writer.flush();
-                }
 
                 // Read the output of the script
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -66,22 +67,47 @@ public class InspectorService {
     }
 
     public void runCveCounter(String path) {
-        Runtime runtime = Runtime.getRuntime();
-        try {
-            runtime.exec(String.format("python %s %s", cveCounter.getFile().getAbsoluteFile(), path));
+        if (path != null && !path.trim().isEmpty()) {
 
-        } catch (IOException e) {
-            throw new SomethingWentWrongException(Color.RED.getColor() + " " + e.getMessage() + " " + Color.RESET.getColor());
+            Runtime runtime = Runtime.getRuntime();
+            try {
+                runtime.exec(String.format("python %s %s", cveCounter.getFile().getAbsoluteFile(), path));
+
+            } catch (IOException e) {
+                throw new SomethingWentWrongException(Color.RED.getColor() + " " + e.getMessage() + " " + Color.RESET.getColor());
+            }
         }
     }
 
     public void runCveInfo(String path) {
-        Runtime runtime = Runtime.getRuntime();
-        try {
-            runtime.exec(String.format("python " + cveInfo.getFile().getAbsoluteFile() + " %s", path));
-        } catch (IOException e) {
-            throw new SomethingWentWrongException(Color.RED.getColor() + " " + e.getMessage() + " " + Color.RESET.getColor());
+        if (path != null && !path.trim().isEmpty()) {
+            Runtime runtime = Runtime.getRuntime();
+            try {
+                runtime.exec(String.format("python " + cveInfo.getFile().getAbsoluteFile() + " %s", path));
+            } catch (IOException e) {
+                throw new SomethingWentWrongException(Color.RED.getColor() + " " + e.getMessage() + " " + Color.RESET.getColor());
+            }
         }
+    }
 
+    public void runRbacCheck() {
+        String currentDirectory = Paths.get("")
+                .toAbsolutePath()
+                .toString();
+        File rolesFile = new File(currentDirectory + "/scan_files/roles.json");
+        File roleBindingsFile = new File("/scan_files/rolebindings.json");
+        File clusterRoleFile = new File("/scan_files/clusterroles.json");
+        File clusterRoleBindings = new File("/scan_files/clusterrolebindings.json");
+
+        if (rolesFile.exists() && roleBindingsFile.exists() && clusterRoleBindings.exists() && clusterRoleFile.exists()) {
+            Runtime runtime = Runtime.getRuntime();
+            try {
+                runtime.exec(String.format("python " + rbacCheck.getFile().getAbsolutePath() + " %s"));
+            } catch (IOException e) {
+                System.err.println(e.getMessage());
+            }
+        } else {
+            System.err.println("Can't find necessary files");
+        }
     }
 }
