@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
-/***
+/**
  * This service allow you to run few commands to investigate kubernetes image vulnerabilities, count severity in different
  * batch of files and gives info about each of them.
 
@@ -33,6 +33,10 @@ public class InspectorService {
     @Value("classpath:scripts/trivy_scan.sh")
     private Resource trivyScript;
 
+    /**
+     * This method run already pre-installed vulnerability scanner.
+     * @param path path to folder with pulled images
+     */
     public void runTrivyScan(String path) {
         if (path != null) {
             try {
@@ -66,6 +70,10 @@ public class InspectorService {
         }
     }
 
+    /**
+     * Runs python script which count the same type of vulnerabilities.
+     * @param path to folder with pulled images
+     */
     public void runCveCounter(String path) {
         if (path != null && !path.trim().isEmpty()) {
 
@@ -79,17 +87,26 @@ public class InspectorService {
         }
     }
 
-    public void runCveInfo(String path) {
-        if (path != null && !path.trim().isEmpty()) {
+    /**
+     * Runs python script which triggers CVEmap binary to get info about counted vulnerabilities.
+     * Make sure that python available as without any numbers. Just `python`.
+     * @param file path to file with counted CVE`s
+     */
+    public void runCveInfo(String file) {
+        if (file != null && !file.trim().isEmpty()) {
             Runtime runtime = Runtime.getRuntime();
             try {
-                runtime.exec(String.format("python " + cveInfo.getFile().getAbsoluteFile() + " %s", path));
+                runtime.exec(String.format("python " + cveInfo.getFile().getAbsoluteFile() + " %s", file));
             } catch (IOException e) {
                 throw new SomethingWentWrongException(Color.RED.getColor() + " " + e.getMessage() + " " + Color.RESET.getColor());
             }
         }
     }
 
+    /**
+     * Runs role-based access control for users and roles. Script automatically fetches roles, role bindings,
+     * cluster roles and cluster bindings. Fetched data stored in scan_files directory.
+     */
     public void runRbacCheck() {
         String currentDirectory = Paths.get("")
                 .toAbsolutePath()
