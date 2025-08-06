@@ -21,7 +21,7 @@ function escalate_privileges() {
 
 function check_arguments(){
     if [ -z "$1" ]; then
-        echo "Enter path to the file with images."
+        echo "Enter path to the folder with images."
         exit 1
     fi
 }
