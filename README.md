@@ -3,7 +3,7 @@
 ![Static Badge](https://img.shields.io/badge/Requires%3A_-_trivy_-purple)
 ![Static Badge](https://img.shields.io/badge/Requires%3A_-_CVEmap_-purple)
 
-# Kubernetes security inspector  :lock: :heavy_check_mark: :zap:
+# Kubernetes security inspector  :lock: :heavy_check_mark: [![Awesome](https://awesome.re/badge.svg)](https://awesome.re)
 Project is under construction.
 ## Introduction
 

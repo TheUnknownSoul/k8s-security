@@ -29,25 +29,25 @@ public class Commands extends AbstractShellComponent {
 
     @ShellMethod(key = "trivy", value = "Run trivy for scanning docker images")
     public void getPathForTrivy() {
-        System.out.printf("%s Scanning images in directory: %s %s %n", Color.BlUE.getColor(), workingDirectory, Color.RESET.getColor());
+        System.out.printf("%s [+]Scanning images in directory: %s %s %n", Color.BlUE.getColor(), workingDirectory, Color.RESET.getColor());
         inspectorService.runTrivyScan(workingDirectory);
     }
 
     @ShellMethod(key = "Check RBAC", value = "Check role-based access control")
     public void RBAC_Check() {
-        System.out.printf("%s Checking roles and bindings: %s %s %n", Color.BlUE.getColor(), workingDirectory, Color.RESET.getColor());
+        System.out.printf("%s [+]Checking roles and bindings: %s %s %n", Color.BlUE.getColor(), workingDirectory, Color.RESET.getColor());
         inspectorService.runTrivyScan(workingDirectory);
     }
 
     @ShellMethod(key = "process CVE", value = "Count number of the same CVE`s")
     public void getPathForProcessingCVEs() {
-        System.out.println(Color.BlUE.getColor() + "Counting duplicates... " + Color.RESET.getColor());
+        System.out.println(Color.BlUE.getColor() + "[+]Counting duplicates... " + Color.RESET.getColor());
         inspectorService.runCveCounter(workingDirectory);
     }
 
     @ShellMethod(key = "CVE info", value = "Get information about severity, CVSS and description")
     public void getPathForProcessingCVEsInfo() {
-        System.out.println(Color.BlUE.getColor() + "Gathering information about CVE's... " + Color.RESET.getColor());
+        System.out.println(Color.BlUE.getColor() + "[+]Gathering information about CVE`s... " + Color.RESET.getColor());
         inspectorService.runCveInfo(workingDirectory);
     }
 
@@ -97,11 +97,11 @@ public class Commands extends AbstractShellComponent {
     public void getPathToProcess(@ShellOption(help = "Enter path", valueProvider = PathValueProvider.class) String path) {
         boolean isReadyToProcess = checkConfirmation();
         if (isReadyToProcess) {
-            System.out.println("Working directory is set to: " + Color.GREEN.getColor() + path + Color.RESET.getColor());
+            System.out.println("[✅]Working directory is set to: " + Color.GREEN.getColor() + path + Color.RESET.getColor());
             if (path != null && !path.trim().isEmpty()) {
                 workingDirectory = path;
             } else {
-                throw new SomethingWentWrongException("Path couldn't be empty");
+                throw new SomethingWentWrongException("[x]Path couldn't be empty");
             }
         }
     }
