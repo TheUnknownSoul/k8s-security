@@ -78,17 +78,12 @@
 					</execution>
 				</executions>
 				<configuration>
-				<finalName>k8security-${project.version}</finalName>
 				<outputDirectory>
 					builds
 				</outputDirectory>
-
 				</configuration>
-
 			</plugin>
-
 		</plugins>
-
+		<finalName>k8security-${project.version}</finalName>
 	</build>
-
 </project>

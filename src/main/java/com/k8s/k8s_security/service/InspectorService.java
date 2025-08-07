@@ -68,9 +68,11 @@ public class InspectorService {
                 int exitCode = process.waitFor(); // Wait for the script to finish
 
                 if (exitCode == 0) {
-                    System.out.println(Color.GREEN.getColor() + "[✅]Script executed successfully with root privileges: " + Color.RESET.getColor());
+                    System.out.println(Color.GREEN.getColor() + "[✅]Script executed successfully with root privileges: "
+                            + Color.RESET.getColor());
                 } else {
-                    System.out.println(Color.RED.getColor() + "[x]Script execution failed with exit code " + exitCode + " " + Color.RESET.getColor());
+                    System.out.println(Color.RED.getColor() + "[x]Script execution failed with exit code " + exitCode +
+                            " " + Color.RESET.getColor());
                 }
             } catch (IOException | InterruptedException e) {
                 throw new SomethingWentWrongException(Color.RED.getColor() + " " + e.getMessage() + " " + Color.RESET.getColor());
