@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# menu.sh — interactive launcher
 # - Arrow-key navigation + Enter
 # - TAB-completion for paths + optional picker on 'p' (fzf/dialog/whiptail)
 # - Per-script hints, optional validation, confirm-only mode (RBAC)
